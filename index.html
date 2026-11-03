@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="来訪者受付">
+<meta name="robots" content="noindex, nofollow">
+<title>来訪者受付｜青山周平事務所</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+         background: #f4f6f9; color: #1d2733; -webkit-text-size-adjust: 100%; }
+  #err { display: none; background: #fde8e8; color: #9b1c1c; padding: 10px 16px; font-size: 14px; white-space: pre-wrap; }
+  header { background: #1f4e8c; color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { margin: 0; font-size: 24px; letter-spacing: .1em; }
+  header span { font-size: 15px; opacity: .85; }
+  main { max-width: 820px; margin: 0 auto; padding: 24px 20px 60px; }
+  .screen { display: none; }
+  .screen.on { display: block; }
+  .welcome { text-align: center; padding-top: 30px; }
+  .welcome h2 { font-size: 34px; margin: 10px 0 8px; }
+  .welcome p { font-size: 19px; margin: 0 0 34px; color: #4a5868; }
+  .big { display: block; width: 100%; max-width: 560px; margin: 0 auto 20px; padding: 28px 20px; font-size: 26px; font-weight: bold;
+         border: none; border-radius: 18px; cursor: pointer; color: #fff; background: #1f4e8c; box-shadow: 0 3px 0 #163a69; }
+  .big.sub { background: #fff; color: #1f4e8c; border: 3px solid #1f4e8c; box-shadow: none; }
+  .big small { display: block; font-size: 16px; font-weight: normal; margin-top: 6px; opacity: .85; }
+  .notice { font-size: 14px; color: #5d6b7a; margin-top: 30px; line-height: 1.7; }
+  .card { background: #fff; border-radius: 16px; padding: 22px 22px 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .lead { font-size: 19px; margin: 0 0 16px; }
+  label { display: block; font-size: 17px; font-weight: bold; margin: 0 0 6px; }
+  label em { font-style: normal; color: #c0392b; font-size: 14px; margin-left: 6px; }
+  label i { font-style: normal; color: #7a8794; font-size: 14px; font-weight: normal; margin-left: 6px; }
+  input, textarea { width: 100%; font-size: 20px; padding: 13px 14px; border: 2px solid #c9d2dc; border-radius: 10px;
+                    margin-bottom: 16px; background: #fff; color: #1d2733; font-family: inherit; }
+  input:focus, textarea:focus { outline: none; border-color: #1f4e8c; }
+  textarea { height: 96px; resize: vertical; }
+  .row2 { display: flex; gap: 14px; }
+  .row2 > div { flex: 1; min-width: 0; }
+  .photo { text-align: center; margin-bottom: 14px; }
+  .photo img { max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #ddd; }
+  .photo button { display: block; margin: 8px auto 0; padding: 10px 22px; font-size: 17px; border-radius: 10px;
+                  border: 2px solid #1f4e8c; background: #fff; color: #1f4e8c; cursor: pointer; }
+  .btns { display: flex; gap: 14px; margin-top: 18px; }
+  .btns button { flex: 1; padding: 20px; font-size: 22px; font-weight: bold; border-radius: 14px; border: none; cursor: pointer; }
+  .ok { background: #1f8c4e; color: #fff; }
+  .back { background: #e3e8ee; color: #1d2733; }
+  button:disabled { opacity: .5; }
+  .center { text-align: center; padding-top: 70px; }
+  .center h2 { font-size: 32px; margin: 0 0 14px; }
+  .center p { font-size: 20px; color: #4a5868; line-height: 1.7; }
+  .spinner { width: 64px; height: 64px; margin: 0 auto 26px; border: 7px solid #d6dee8; border-top-color: #1f4e8c;
+             border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .check { font-size: 80px; color: #1f8c4e; line-height: 1; margin-bottom: 14px; }
+  .msg { display: none; background: #fff4e0; color: #8a5300; padding: 12px 14px; border-radius: 10px; font-size: 17px; margin-bottom: 14px; }
+
+  /* カメラ */
+  .cam-guide { text-align: center; font-size: 22px; font-weight: bold; margin: 0 0 14px; }
+  .cam-box { position: relative; background: #000; border-radius: 16px; overflow: hidden; aspect-ratio: 4 / 3; }
+  .cam-box video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+  .cam-frame { position: absolute; left: 15%; right: 15%; top: 50%; aspect-ratio: 91 / 55; transform: translateY(-50%);
+               border: 4px dashed rgba(255,255,255,.9); border-radius: 12px; box-shadow: 0 0 0 2000px rgba(0,0,0,.25); }
+  .cam-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+               font-size: 140px; font-weight: bold; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); pointer-events: none; }
+  .cam-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .cam-flash.on { opacity: 1; transition: none; }
+  .cam-msg { display: none; background: #fff4e0; color: #8a5300; padding: 14px; border-radius: 10px; font-size: 18px; margin: 14px 0 0; line-height: 1.6; }
+
+  @media (max-width: 600px) { .row2 { display: block; } header h1 { font-size: 20px; } .welcome h2 { font-size: 27px; } .cam-count { font-size: 100px; } }
+</style>
+</head>
+<body>
+<div id="err"></div>
+<header><h1>来訪者受付</h1><span>青山周平事務所</span></header>
+<main>
+
+  <!-- 1. ようこそ -->
+  <section id="s-start" class="screen on">
+    <div class="welcome">
+      <h2>ようこそお越しくださいました</h2>
+      <p>受付をお願いいたします</p>
+      <button class="big" id="b-card">名刺を撮影する<small>画面の上のカメラに名刺を向けると、3秒後に自動で撮影します</small></button>
+      <button class="big sub" id="b-hand">手で入力する</button>
+      <input type="file" id="f-card" accept="image/*" capture="user" style="display:none">
+      <div class="notice">ご記入いただいた内容は、青山周平事務所での来訪の記録と、今後のご連絡のために使い、適切に管理いたします。</div>
+    </div>
+  </section>
+
+  <!-- 2. カメラ（3秒後に自動で撮影） -->
+  <section id="s-cam" class="screen">
+    <p class="cam-guide" id="cam-guide">名刺を枠に合わせてください</p>
+    <div class="cam-box">
+      <video id="video" playsinline muted autoplay></video>
+      <div class="cam-frame"></div>
+      <div class="cam-count" id="cam-count"></div>
+      <div class="cam-flash" id="cam-flash"></div>
+    </div>
+    <div class="cam-msg" id="cam-msg"></div>
+    <div class="btns">
+      <button class="back" id="b-cam-cancel">やめる</button>
+      <button class="ok" id="b-cam-alt" style="display:none">標準のカメラで撮る</button>
+    </div>
+  </section>
+
+  <!-- 3. 読み取り中 -->
+  <section id="s-wait" class="screen">
+    <div class="center"><div class="spinner"></div><h2 id="wait-title">名刺を読み取っています</h2><p>少々お待ちください</p></div>
+  </section>
+
+  <!-- 4. 入力・確認 -->
+  <section id="s-form" class="screen">
+    <div class="card">
+      <p class="lead" id="lead">ご記入をお願いいたします。</p>
+      <div class="msg" id="msg"></div>
+      <div class="photo" id="photo" style="display:none"><img id="photo-img" alt="名刺"><button id="b-retake">撮り直す</button></div>
+      <label>お名前<em>必須</em></label><input id="name" autocomplete="off">
+      <label>ふりがな<i>任意</i></label><input id="kana" autocomplete="off">
+      <div class="row2">
+        <div><label>会社・団体<i>任意</i></label><input id="org" autocomplete="off"></div>
+        <div><label>肩書<i>任意</i></label><input id="title" autocomplete="off"></div>
+      </div>
+      <div class="row2">
+        <div><label>携帯電話<i>ご連絡先</i></label><input id="tel" type="tel" autocomplete="off"></div>
+        <div><label>メール<i>任意</i></label><input id="email" type="email" autocomplete="off" autocapitalize="off"></div>
+      </div>
+      <div class="row2">
+        <div style="flex:0 0 32%"><label>郵便番号<i>任意</i></label><input id="zip" inputmode="numeric" autocomplete="off"></div>
+        <div><label>住所<i>任意</i></label><input id="address" autocomplete="off"></div>
+      </div>
+      <label>備考<i>任意（ご用件など）</i></label><textarea id="note"></textarea>
+    </div>
+    <div class="btns">
+      <button class="back" id="b-cancel">やめる</button>
+      <button class="ok" id="b-send">この内容で受付する</button>
+    </div>
+  </section>
+
+  <!-- 5. 完了 -->
+  <section id="s-done" class="screen">
+    <div class="center">
+      <div class="check">✓</div>
+      <p id="done-name" style="margin:0 0 6px"></p>
+      <h2 id="done-title">ご来所ありがとうございます</h2>
+      <p>受付が完了しました。<br>担当の者がまいりますので、少々お待ちください。</p>
+      <button class="big sub" id="b-home" style="margin-top:30px">はじめの画面にもどる</button>
+    </div>
+  </section>
+
+</main>
+<script>
+(function () {
+  // 記録を受け付ける Apps Script（来訪者受付）のウェブアプリ
+  var API_URL = 'https://script.google.com/macros/s/AKfycbx8osE1zw4i1twp46n4pQyO8H5N2YqUeh0XsPq5_eZf-M0_kKjnCjQm3TAcWcXndqyM/exec';
+
+  var errBox = document.getElementById('err');
+  function showErr(text) { errBox.style.display = 'block'; errBox.textContent = text; }
+  window.onerror = function (m, src, line) { showErr('画面のエラー：' + m + '（' + line + '行）'); };
+
+  var FIELDS = ['name', 'kana', 'org', 'title', 'tel', 'email', 'zip', 'address', 'note'];
+  var IDLE_MS = 3 * 60 * 1000;   // 入力の途中で放置されたら消す
+  var DONE_MS = 10 * 1000;       // 完了画面から自動で戻る
+  var CAM_IDLE_MS = 60 * 1000;   // カメラの画面で放置されたら戻る
+  var COUNT_SEC = 3;             // 何秒後に撮るか
+  var photo = null;              // { base64, mime }
+  var timer = null;
+  var busy = false;
+  var stream = null;
+  var countTimer = null;
+
+  function $(id) { return document.getElementById(id); }
+
+  function show(name) {
+    var list = document.querySelectorAll('.screen');
+    for (var i = 0; i < list.length; i++) list[i].classList.remove('on');
+    $('s-' + name).classList.add('on');
+    window.scrollTo(0, 0);
+    clearTimeout(timer);
+    if (name === 'form') timer = setTimeout(reset, IDLE_MS);
+    if (name === 'done') timer = setTimeout(reset, DONE_MS);
+    if (name === 'cam') timer = setTimeout(reset, CAM_IDLE_MS);
+  }
+
+  function reset() {
+    stopCamera();
+    FIELDS.forEach(function (k) { $(k).value = ''; });
+    photo = null;
+    $('photo').style.display = 'none';
+    $('photo-img').src = '';
+    $('msg').style.display = 'none';
+    $('f-card').value = '';
+    busy = false;
+    $('b-send').disabled = false;
+    show('start');
+  }
+
+  function note(text) { var m = $('msg'); m.textContent = text; m.style.display = text ? 'block' : 'none'; }
+
+  // Apps Script に送る（本文は JSON。ヘッダーを付けないので余計な確認の往復が起きない）
+  function call(action, data, ok, ng) {
+    data.action = action;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow' })
+      .then(function (res) { return res.json(); })
+      .then(function (r) { if (r && r.ok) ok(r.data); else ng(new Error((r && r.error) || '返事がありませんでした')); })
+      .catch(function (e) { ng(new Error('通信できませんでした（' + (e.message || e) + '）')); });
+  }
+
+  // 入力があるたびに放置タイマーを延ばす
+  document.addEventListener('input', function () {
+    if ($('s-form').classList.contains('on')) { clearTimeout(timer); timer = setTimeout(reset, IDLE_MS); }
+  });
+
+  $('b-hand').onclick = function () {
+    $('lead').textContent = 'ご記入をお願いいたします。';
+    show('form');
+  };
+  $('b-card').onclick = startCamera;
+  $('b-retake').onclick = startCamera;
+  $('b-cam-cancel').onclick = reset;
+  $('b-cam-alt').onclick = function () { stopCamera(); $('f-card').click(); };
+  $('b-cancel').onclick = reset;
+  $('b-home').onclick = reset;
+
+  // ===== カメラ（画面側のカメラで、3秒数えてから自動で撮る） =====
+  function startCamera() {
+    stopCamera();
+    $('cam-msg').style.display = 'none';
+    $('b-cam-alt').style.display = 'none';
+    $('cam-count').textContent = '';
+    $('cam-guide').textContent = '名刺を枠に合わせてください';
+    show('cam');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camFail('この iPad ではカメラを画面に出せませんでした。'); return; }
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false
+    }).then(function (s) {
+      stream = s;
+      var v = $('video');
+      v.srcObject = s;
+      v.onloadedmetadata = function () {
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {});
+        // 映像が落ち着くまで少し待ってから数え始める
+        setTimeout(function () { countDown(COUNT_SEC); }, 600);
+      };
+    }).catch(function (e) {
+      var denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
+      camFail(denied ? 'カメラの使用が許可されていません。' : 'カメラを開けませんでした。');
+    });
+  }
+
+  function countDown(n) {
+    if (!stream) return;
+    if (n <= 0) { $('cam-count').textContent = ''; snap(); return; }
+    $('cam-guide').textContent = 'そのままお待ちください';
+    $('cam-count').textContent = String(n);
+    countTimer = setTimeout(function () { countDown(n - 1); }, 1000);
+  }
+
+  function snap() {
+    var v = $('video');
+    var w = v.videoWidth, h = v.videoHeight;
+    if (!w || !h) { camFail('カメラの映像を取り込めませんでした。'); return; }
+    var f = $('cam-flash');
+    f.classList.add('on');
+    setTimeout(function () { f.classList.remove('on'); }, 60);
+    var max = 1600, s = Math.min(1, max / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.round(w * s); c.height = Math.round(h * s);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);   // 写真は左右反転しない（文字が正しい向き）
+    var url = c.toDataURL('image/jpeg', 0.88);
+    stopCamera();
+    readPhoto({ base64: url.split(',')[1], mime: 'image/jpeg' });
+  }
+
+  function stopCamera() {
+    clearTimeout(countTimer);
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    var v = $('video');
+    if (v) v.srcObject = null;
+  }
+
+  function camFail(text) {
+    stopCamera();
+    $('cam-guide').textContent = '';
+    var m = $('cam-msg');
+    m.textContent = text + '「標準のカメラで撮る」を押すと、いつものカメラで撮影できます。';
+    m.style.display = 'block';
+    $('b-cam-alt').style.display = 'block';
+  }
+
+  // 標準のカメラで撮ったとき（カメラが使えなかったときの予備）
+  $('f-card').onchange = function () {
+    var file = this.files && this.files[0];
+    if (!file) return;
+    $('wait-title').textContent = '名刺を読み取っています';
+    show('wait');
+    shrink(file, function (err, data) {
+      if (err) { goForm('写真を読み込めませんでした。お手数ですが手で入力してください。'); return; }
+      readPhoto(data);
+    });
+  };
+
+  function readPhoto(data) {
+    photo = data;
+    FIELDS.forEach(function (k) { $(k).value = ''; });
+    $('photo-img').src = 'data:' + data.mime + ';base64,' + data.base64;
+    $('photo').style.display = 'block';
+    $('wait-title').textContent = '名刺を読み取っています';
+    show('wait');
+    call('readCard', { base64: data.base64, mime: data.mime }, function (r) {
+      FIELDS.forEach(function (k) { if (r && r[k]) $(k).value = r[k]; });
+      goForm('');
+    }, function (e) { goForm(e.message || String(e)); });
+  }
+
+  function goForm(warn) {
+    $('lead').textContent = '名刺から読み取りました。内容をご確認のうえ、違っているところは直してください。';
+    if (!photo) $('lead').textContent = 'ご記入をお願いいたします。';
+    note(warn);
+    show('form');
+  }
+
+  // 写真を縮めて JPEG にする（長い辺 1600px）
+  function shrink(file, cb) {
+    var reader = new FileReader();
+    reader.onerror = function () { cb(new Error('read')); };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () { cb(new Error('img')); };
+      img.onload = function () {
+        var max = 1600, w = img.naturalWidth, h = img.naturalHeight;
+        var s = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        var url = c.toDataURL('image/jpeg', 0.85);
+        cb(null, { base64: url.split(',')[1], mime: 'image/jpeg' });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  $('b-send').onclick = function () {
+    if (busy) return;
+    var form = {};
+    FIELDS.forEach(function (k) { form[k] = $(k).value.trim(); });
+    if (!form.name) { note('お名前を入れてください。'); $('name').focus(); return; }
+    busy = true;
+    this.disabled = true;
+    $('wait-title').textContent = '受付しています';
+    show('wait');
+    call('register', { form: form, photo: photo }, function (r) {
+      busy = false;
+      var titles = { first: 'ご来所ありがとうございます', recent: 'いつもありがとうございます', long: 'お久しぶりです' };
+      $('done-title').textContent = titles[r && r.visit] || titles.first;
+      $('done-name').textContent = (r && r.name ? r.name : form.name) + ' 様';
+      show('done');
+    }, function (e) {
+      busy = false;
+      $('b-send').disabled = false;
+      note('受付できませんでした。もう一度「この内容で受付する」を押すか、事務所の者にお声がけください。（' + (e.message || e) + '）');
+      show('form');
+    });
+  };
+})();
+</script>
+</body>
+</html>
